@@ -26,4 +26,4 @@ ref = [0.93, 1.1, 0, 5, -10, 10];
 f = @(v, s) real(s(1, :)) + abs(abs(v(3, :) - 1)) + abs(abs(v(4, :) - 1));
 
 % Solve the OPF problem and produce the optimal voltages, powers and objective value.
-[v, s, fval] = solve_tree(100, 100, f, Z, PQ, PV, ref)
+[v, s, fval] = solve_tree(f, Z, PQ, PV, ref)

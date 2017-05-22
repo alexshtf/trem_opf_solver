@@ -1,19 +1,12 @@
 function [vopt ,sopt, cost] = solve_tree(...
-    m, d, f, Z, PQ, PV, ref)
+    f, Z, PQ, PV, ref, varargin)
 % Solves the optimal power-flow problem on a restricted network with
 % additional constraints, such as pmin/pmax constraints on the reference
 % node.
 %
-%   [vopt, sopt, cost] = solve_tree(m, d, f, Z, bounds, PQ, PV)
+%   [vopt, sopt, cost] = solve_tree(f, Z, bounds, PQ, PV, Name, Value, ...)
 %
 % Input arguments:
-%   m
-%       The sampling density of the feasible set. Higher value results in 
-%       better approximation of the optimal solution. Must be a positive
-%       integer.
-%   d 
-%       The sampling density of intermediate curve functions. Higher values
-%       result in less constraint violation. Must be an integer greater than 3.
 %   f
 %       Objective function handle. The function must be callable 
 %       as f(V, S) where V is a matrix of node voltages, and S is a matrix of
@@ -25,30 +18,18 @@ function [vopt ,sopt, cost] = solve_tree(...
 %       Edge impedance matrix and network topology. For a non-zero Z(i,j), the
 %       value defines the impedance. If Z(i,j) is zero, it means that there is
 %       no edge between i and j.
-%   bounds
-%       A matrix of size N x 6 with bounds on the voltage absolute value,
-%       active power and reactive power for each node. Each row specifies
-%       bound constraints associated with node i:
-%         - Voltage absolute value is constrained to the interval
-%           [bounds(i, 1), bounds(i, 2)]. The constraint is applied to the
-%           PQ and the reference nodes. For PV nodes these bounds are
-%           ignored.
-%         - Active power is constrained to the interval [bounds(i, 3),
-%           bounds(i, 4)]. The constraint is applied to PV and the
-%           reference nodes. For PQ nodes these bounds are ignored.
-%         - Reactive power is constrained to the interval [bounds(i, 4),
-%           bounds(i, 5)]. The constraint is applied to PV and the
-%           reference nodes. For PQ nodes these bounds are ignored.
 %   PQ
-%       A matrix of 4 columns, where each row contains the data of a PQ
-%       constraint. The columns have the following meaning:
+%       Defines the PQ constraints. Must be either empty, or a matrix 
+%       of 4 columns, where each row contains the data of a PQ constraint. 
+%       The columns have the following meaning:
 %           1: Node index
 %           2: Apparent power
 %           3: Minimum voltage absolute value.
 %           4: Maximum voltage absolute value.
 %   PV
-%       A matrix of 5 columns, where each row contains the data of a PV
-%       constraint. The columns have the following meaning:
+%       Defines the PV constraints. Must be either empty, or A matrix of
+%       5 columns, where each row contains the data of a PV constraint. 
+%       The columns have the following meaning:
 %           1: Node index
 %           2: Active power
 %           3: Voltage absolute value
@@ -64,6 +45,16 @@ function [vopt ,sopt, cost] = solve_tree(...
 %           5: Minimum reactive power
 %           6: Maximum reactive power
 %
+% Optional arguments, given as Name, Value pairs:
+%   'FeasibleDensity'
+%       The sampling density of the feasible set. Higher value results in 
+%       better approximation of results closer to optimality. Must be an integer
+%       greater than 1. The default is 1000.
+%   'CurveDensity'
+%       The sampling density of intermediate curve functions. Higher values
+%       result smaller deviations from feasibility. Must be an integer greater
+%       than 3. The default is 250.
+%
 %  Remarks:
 %   - Node 1 is the reference node
 %   - The network topology is a tree.
@@ -75,9 +66,59 @@ function [vopt ,sopt, cost] = solve_tree(...
 %   - For any leaf PQ node, the corresponding voltage absolute value bounds
 %     must be finite.
 
+validateRequiredInput(f, Z, PQ, PV, ref);
+[m, d] = parseOptionalInput(varargin{:});
+
 [v, s, ~] = generate_list_tree(m, d, Z, PQ, PV, ref);
 
 func = f(v, s);
 [cost,ind] = min(func);
 vopt = v(:, ind);
 sopt = s(:, ind);
+
+function validateRequiredInput(f, Z, PQ, PV, ref)
+
+if ~isa(f, 'function_handle')
+    error('Expected argument 1, f, to be a function handle');
+end
+
+if ~ismatrix(Z) || size(Z, 1) ~= size(Z, 2) || ~isnumeric(Z) || isempty(Z)
+    error('Expected argument 2, Z, to be a non-empty, squared numeric matrix');
+end
+
+if ~isempty(PQ) && (~ismatrix(PQ) || ~isnumeric(PQ) || size(PQ, 2) ~= 4)
+    error('Expected argument 3, PQ, to be either empty, or a 4-column numeric matrix');
+end
+
+if ~isempty(PV) && (~ismatrix(PV) || ~isnumeric(PV) || size(PV, 2) ~= 5)
+    error('Expected argument 4, PV, to be either empty, or a 5-column numeric matrix');
+end
+
+if ~isvector(ref) || numel(ref) ~= 6 || ~isnumeric(ref)
+    error('Expected argument 5, ref, to be a numeric vector with 6 elements.');
+end
+
+if any(PQ(:, 1) ~= floor(PQ(:, 1))) 
+    error('Expected argument 3, PQ, to have column 1 consisting of integers (bus indices)');
+end
+
+if any(PV(:, 1) ~= floor(PV(:, 1)))
+    error('Expected argument 4, PV, to have column 1 consisting of integers (bus indices)');
+end
+
+n = length(Z);
+allidx = sort([1; PQ(:, 1); PV(:, 1)]);
+if any(allidx' ~= 1:n)
+    error('Any node, except node 1, must be either a PQ or a PV node');
+end
+
+
+function [m, d] = parseOptionalInput(varargin)
+
+p = inputParser;
+addParameter(p, 'FeasibleDensity', 1000, @(x) validateattributes(x, {'numeric'}, {'scalar', 'integer', '>=', 2}));
+addParameter(p, 'CurveDensity', 250, @(x) validateattributes(x, {'numeric'}, {'scalar', 'ingeger', '>=', 4}));
+parse(p, varargin{:});
+
+m = p.Results.FeasibleDensity;
+d = p.Results.CurveDensity;
