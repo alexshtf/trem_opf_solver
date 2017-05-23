@@ -24,7 +24,7 @@ ref = [0.93,  1.1,    0,    5,  -10, 10];
 %    f(v, s) = Re(s_1) + ||v_3| - 1| + ||v_4| - 1|
 % We must provide a function handle that applies the function above
 % to every column of the given arguments.
-f = @(v, s) real(s(1, :)) + abs(abs(v(3, :) - 1)) + abs(abs(v(4, :) - 1));
+f = @(v, s) real(s(1, :)) + abs(abs(v(3, :)) - 1) + abs(abs(v(4, :)) - 1);
 
 % Solve the OPF problem and produce the optimal voltages, powers and objective value.
 [v, s, fval] = solve_tree(f, Z, PQ, PV, ref)
