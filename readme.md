@@ -96,3 +96,53 @@ fval =
     0.0153
 ```
 
+# More on objective functions
+
+Looking at the example above, we defined the objective function to operate on all columns at once. Namely, we wrote
+
+```matlab
+f = @(v, s) real(s(1, :)) + abs(abs(v(3, :)) - 1) + abs(abs(v(4, :)) - 1);
+```
+
+instead of using the, perhaps, more natural syntax:
+
+```matlab
+f = @(v, s) real(s(1)) + abs(abs(v(3)) - 1) + abs(abs(v(4)) - 1);
+```
+
+The reason is that the objective given to `solve_tree` must be able to evaluate the function value on a set of feasible solutions at once, instead of operating on a single feasible solution. This approach was chosen to let us, the users, provide an efficient 'vectorized' implementation, with a small sacrifice to code readability.
+
+The function is given two *matrices* `v, s` of size `m x n`, where `m` is the number of nodes in the given network. Namely, for each `i`, the pair of vectors `v(:, i)` and `s(:, i)` is a feasible solution of the OPF problem. The function is expected to return a vector of `n` entries containing the value of the objective function for every feasible solution.
+
+Here are more examples of objective functions:
+
+```matlab
+% The voltage stability function at all nodes - the sum of deviations of |v| from 1.
+f = @(v, s) sum(abs(abs(v) - 1)); 
+
+% The stability function, considering PQ nodes only. 
+pq_indices = PQ(:, 1); % indices are stored in the first column. See example above
+g = @(v, s) sum(abs(abs(v(pq_indices, :) - 1)));
+```
+
+## Specifying additional constraints
+
+The objective function can be used to specify additional constraints, which are not covered by the `PQ`, `PV`, and `ref` matrices given to `solve_tree`, by returning`inf` when the constraint is violated.  For example, we could have the following constraint on the reference node:
+
+```
+p_1 + abs(q_1) <= 10
+```
+
+where `p_1` is the active power and `q_1` is the reactive power. It reflects the fact that the limit on the reactive power could depend on the amount of real power we generate.
+
+To minimize, for example, the stability function, subject to the constraints of the network *and* the constraint above, we can write:
+
+```matlab
+stability = @(v) sum(abs(abs(v) - 1)); 
+constraint = @(s) real(s(1, :)) + abs(imag(q(1, :))) <= 10; 
+false_to_inf = @(z) 1./z - 1;
+f = @(v, s) stability(v) + false_to_inf(constraint(s));
+
+[v, s, opt] = solve_tree(f, Z, PQ, PV, ref); % Z, PQ, PV, ref already defined
+```
+
