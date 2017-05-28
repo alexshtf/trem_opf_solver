@@ -1,3 +1,15 @@
+The code is distributed under the BSD licence below. The data available in 
+the networks folder is available from a public source, with proper credit 
+given in the readme.md file in the networks folder.
+
+While not required by the official license, we request that publications
+derived from the use of our code explicitly aknowledge that fact, by citing:
+A. Beck, Y. Beck, Y. Levron, A. Shtof, L. Tetruashvili "Globally Solving a Class of Optimal Power Flow Problems in Radial Networks by Tree Reduction", May 2017. Preprint available at [Optimization Online](http://www.optimization-online.org/DB_HTML/2017/05/6041.html)
+
+
+The official license terms are stated below
+-------------------------------------------
+
 MIT License
 
 Copyright (c) 2017 Alex Shtof

@@ -7,7 +7,9 @@ This repository contains MATLAB code for the optimal power flow problem on a spe
 - The leaves of the tree are  either PQ or PV constrained nodes with bounded intervals constraining voltage magnitude or reactive power.
 - Internal nodes are PQ nodes, with arbitrary, possibly unbounded, intervals constraining voltage magnitude.
 
-The precise definition is described in the paper [INSERT PAPER REFERENCE HERE].
+The precise definition and the algorithm used by our solver are described in our paper: 
+
+> A. Beck, Y. Beck, Y. Levron, A. Shtof, L. Tetruashvili "Globally Solving a Class of Optimal Power Flow Problems in Radial Networks by Tree Reduction", May 2017. Preprint available at [Optimization Online](http://www.optimization-online.org/DB_HTML/2017/05/6041.html).
 
 # Getting Started
 
