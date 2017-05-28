@@ -1,0 +1,1 @@
+The networks in this directory are modified versions the "IEEE Radial Distribution Test Feeders". The original network data is available from [here](http://ewh.ieee.org/soc/pes/dsacom/testfeeders/index.html).
