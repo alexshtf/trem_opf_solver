@@ -11,7 +11,7 @@ The precise definition is described in the paper [INSERT PAPER REFERENCE HERE].
 
 # Getting Started
 
-1. Make sure you have MATLAB2015b. Verify that the curve-fitting toolbox is installed by typing the following command inside MATLAB:
+1. Make sure you have MATLAB2015b (or later). Verify that the curve-fitting toolbox is installed by typing the following command inside MATLAB:
 
    ```matlab
    help curvefit
@@ -122,7 +122,7 @@ f = @(v, s) sum(abs(abs(v) - 1));
 
 % The stability function, considering PQ nodes only. 
 pq_indices = PQ(:, 1); % indices are stored in the first column. See example above
-g = @(v, s) sum(abs(abs(v(pq_indices, :) - 1)));
+g = @(v, s) sum(abs(abs(v(pq_indices, :)) - 1));
 ```
 
 ## Specifying additional constraints
@@ -139,7 +139,7 @@ To minimize, for example, the stability function, subject to the constraints of 
 
 ```matlab
 stability = @(v) sum(abs(abs(v) - 1)); 
-constraint = @(s) real(s(1, :)) + abs(imag(q(1, :))) <= 10; 
+constraint = @(s) real(s(1, :)) + abs(imag(s(1, :))) <= 10; 
 false_to_inf = @(z) 1./z - 1;
 f = @(v, s) stability(v) + false_to_inf(constraint(s));
 
