@@ -1,14 +1,15 @@
 function [voltages, powers, currents] ...
-    = generate_list_tree(m, d, Z, PQ, PV, ref)
+    = generate_list_tree(m, d, Z, PQ, PV, ref, root)
+
+Z = Z;
 
 ctrs = constraints(PQ, PV, ref);
-root = 1;
-curves = node_curves(length(Z));
+node_data_arr = node_data.make_array(length(Z));
 G = graph(compute_adjacency(Z));
 
-forward_sweep(d, curves, G, root, Z, ctrs);
+forward_sweep(d, node_data_arr, G, root, Z, ctrs);
 [voltages, powers, currents] = ...
-    backward_sweep(m, curves, G, root, Z);
+    backward_sweep(m, node_data_arr, G, root, Z);
 
 feasible = ctrs.feasible(voltages, powers);
 voltages = voltages(:, feasible);

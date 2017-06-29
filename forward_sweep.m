@@ -1,27 +1,27 @@
-function forward_sweep(d, curves, G, root, Z, ctrs)
+function forward_sweep(d, node_data_arr, G, root, Z, ctrs)
     bfs_edges = bfsearch(G, root, 'edgetonew');
     bfs_tree = digraph(bfs_edges(:, 1), bfs_edges(:, 2));
-    forward_sweep_rec(root, d, curves, bfs_tree, Z, ctrs);
+    forward_sweep_rec(root, root, d, node_data_arr, bfs_tree, Z, ctrs);
 end
 
-function forward_sweep_rec(j, d, curves, bfs_tree, Z, ctrs)
+function forward_sweep_rec(root, j, d, node_data_arr, bfs_tree, Z, ctrs)
     is_leaf = outdegree(bfs_tree, j) == 0;
     if is_leaf
-        curves.data{j} = ctrs.leaf_curve(j, d);
+        node_data_arr(j).add_curve(1, ctrs.leaf_curve(j, d));
     else
         children = transpose(successors(bfs_tree, j));
         for k = children
-            forward_sweep_rec(k, d, curves, bfs_tree, Z, ctrs);
-            curves.backup{k} = curves.data{k};
-            curves.data{k} = pass_impedance(curves.data{k}, Z(j, k));
+            forward_sweep_rec(root, k, d, node_data_arr, bfs_tree, Z, ctrs);
+            node_data_arr(k).pass_impedance(Z(j,k))
         end
         
-        if j == 1
+        if j == root
             s = 0;
         else
             s = ctrs.s(j);
         end
-        curves.data{j} = merge_curves(...
-            d, curves.data(children), s, ctrs.Vbounds(j));
+        
+        node_data_arr(j).merge_curves(...
+            node_data_arr(children), d, s, ctrs.Vbounds(j));
     end
 end

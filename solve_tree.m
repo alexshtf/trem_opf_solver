@@ -54,11 +54,13 @@ function [vopt ,sopt, cost] = solve_tree(...
 %       The sampling density of intermediate curve functions. Higher values
 %       result smaller deviations from feasibility. Must be an integer greater
 %       than 3. The default is 250.
+%   'Ref'
+%       The index of the reference node. The default is 1.
 %
 %  Remarks:
-%   - Node 1 is the reference node
+%   - Node 1 is the reference node (unless explicitly specified otherwise).
 %   - The network topology is a tree.
-%   - Any node, except node 1, must be either a PQ node or a PV node. Thus,
+%   - Any node, except the ref node, must be either a PQ or a PV node. Thus,
 %     its index must appear either in the first column of PQ or the PV 
 %     table.
 %   - Any PV node must be a leaf. The corresponding reactive power bounds
@@ -66,17 +68,17 @@ function [vopt ,sopt, cost] = solve_tree(...
 %   - For any leaf PQ node, the corresponding voltage absolute value bounds
 %     must be finite.
 
-validateRequiredInput(f, Z, PQ, PV, ref);
-[m, d] = parseOptionalInput(varargin{:});
+[m, d, refIdx] = parseOptionalInput(varargin{:});
+validateRequiredInput(f, Z, PQ, PV, ref, refIdx);
 
-[v, s, ~] = generate_list_tree(m, d, Z, PQ, PV, ref);
+[v, s, ~] = generate_list_tree(m, d, Z, PQ, PV, ref, refIdx);
 
 func = f(v, s);
 [cost,ind] = min(func);
 vopt = v(:, ind);
 sopt = s(:, ind);
 
-function validateRequiredInput(f, Z, PQ, PV, ref)
+function validateRequiredInput(f, Z, PQ, PV, ref, refIdx)
 
 if ~isa(f, 'function_handle')
     error('Expected argument 1, f, to be a function handle');
@@ -107,18 +109,20 @@ if any(PV(:, 1) ~= floor(PV(:, 1)))
 end
 
 n = length(Z);
-allidx = sort([1; PQ(:, 1); PV(:, 1)]);
+allidx = sort([refIdx; PQ(:, 1); PV(:, 1)]);
 if any(allidx' ~= 1:n)
-    error('Any node, except node 1, must be either a PQ or a PV node');
+    error('Any node, except the reference node, must be either a PQ or a PV node');
 end
 
 
-function [m, d] = parseOptionalInput(varargin)
+function [m, d, refIdx] = parseOptionalInput(varargin)
 
 p = inputParser;
 addParameter(p, 'FeasibleDensity', 1000, @(x) validateattributes(x, {'numeric'}, {'scalar', 'integer', '>=', 2}));
-addParameter(p, 'CurveDensity', 250, @(x) validateattributes(x, {'numeric'}, {'scalar', 'ingeger', '>=', 4}));
+addParameter(p, 'CurveDensity', 250, @(x) validateattributes(x, {'numeric'}, {'scalar', 'integer', '>=', 4}));
+addParameter(p, 'Ref', 1, @(x) validateattributed(x, {'numeric'}, {'scalar', 'integer', '>=', 1}));
 parse(p, varargin{:});
 
 m = p.Results.FeasibleDensity;
 d = p.Results.CurveDensity;
+refIdx = p.Results.Ref;
