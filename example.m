@@ -8,13 +8,13 @@ Z = Z + Z.';
 
 % Define PQ constraints. Each row is:
 %   bus,    p+iq, vmin, vmax       [consumed power is negative!]
-PQ = [3,   -5-1i,  0.9, 1.1  ;
+PQ = [5,   -5-1i,  0.9, 1.1  ;
       4, -4-0.2i, 0.92, 1.06];
 
 % Define PV constraints. Each row is:
 %   bus,   p,  |v|, qmin, qmax     [generated power is positive]
 PV = [2, 4.9, 1.01,  -10, 10;
-      5, 4.2,  1.0,   -5, 5];
+      3, 4.2,  1.0,   -5, 5];
       
 % Define reference constraints: 
 %      vmin, vmax, pmin, pmax, qmin, qmax      

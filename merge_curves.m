@@ -26,8 +26,8 @@ function merged = merge_curves(N, curves, constr)
             return;
         end
         
-        mv = ones(N, constr.v);
-        ms = constraint.p + 1i * linspace(constr.qmin, constr.qmax, N);
+        mv = ones(1, N) * constr.v;
+        ms = constr.p + 1i * linspace(constr.qmin, constr.qmax, N);
     else
         error('BUG');
     end
