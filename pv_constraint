@@ -1,0 +1,15 @@
+classdef pq_constraint
+    properties
+        p
+        v
+        qmin
+        qmax
+    end
+    methods
+        function obj = pq_constraint(p, v, qmin, qmax)
+            obj.s = s;
+            obj.vmin = vmin;
+            obj.vmax = vmax;
+        end
+    end
+end

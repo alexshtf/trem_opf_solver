@@ -69,12 +69,38 @@ classdef constraints < handle
                 (qmin <= qgen) & (qgen <= qmax);
         end
         
+        function flag = is_pq(obj, j)
+            flag = obj.PQi(j) > 0;
+        end
+        
+        function flag = is_pv(obj, j)
+            flag = obj.PVi(j) > 0;
+        end
+        
         function t = leaf_curve(obj, j, d)
             if obj.PQi(j) > 0
                 t = obj.pq_leaf_curve(obj.PQi(j), d);
             else
                 t = obj.pv_leaf_curve(obj.PVi(j), d);
             end
+        end
+        
+        function ctrn = constraint(obj, j)
+            pqi = obj.PQi(j);
+            if pqi > 0
+                row = obj.PQ(pqi, 2:end);
+                ctrn = pq_constraint(row(1), row(2), row(3));
+                return;
+            end
+            
+            pvi = obj.PVi(j);
+            if pvi > 0
+                row = obj.PV(pvi, 2:end);
+                ctrn = pv_constraint(row(1), row(2), row(3), row(4));
+                return;
+            end
+            
+            ctrn = root_constraint(obj.ref(5), obj.ref(6));
         end
         
         function result = s(obj, j)
@@ -90,7 +116,7 @@ classdef constraints < handle
             pqi = obj.PQi(j);
             if pqi > 0
                 res = obj.PQ(pqi, 3:4);
-            elseif j == 1
+            elseif obj.PVi(j) == 0 % not a PV constraint
                 res = obj.ref(1:2);
             else
                 error('Vbounds can only be used with PQ or reference nodes');

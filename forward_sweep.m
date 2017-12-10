@@ -15,13 +15,7 @@ function forward_sweep_rec(root, j, d, node_data_arr, bfs_tree, Z, ctrs)
             node_data_arr(k).pass_impedance(Z(j,k))
         end
         
-        if j == root
-            s = 0;
-        else
-            s = ctrs.s(j);
-        end
-        
         node_data_arr(j).merge_curves(...
-            node_data_arr(children), d, s, ctrs.Vbounds(j));
+            node_data_arr(children), d, ctrs.constraint(j));
     end
 end

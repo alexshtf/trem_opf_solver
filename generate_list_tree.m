@@ -1,8 +1,6 @@
 function [voltages, powers, currents] ...
     = generate_list_tree(m, d, Z, PQ, PV, ref, root)
 
-Z = Z;
-
 ctrs = constraints(PQ, PV, ref);
 node_data_arr = node_data.make_array(length(Z));
 G = graph(compute_adjacency(Z));

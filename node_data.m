@@ -46,7 +46,7 @@ classdef node_data < handle
             obj.curves = horzcat(phi_curves{:});
         end
         
-        function merge_curves(obj, children, d, s, Vbounds) 
+        function merge_curves(obj, children, d, constraint) 
             son_indices = cell(1, numel(children));
             for i = 1:numel(children)
                 son_indices{i} = 1:(children(i).num_curves());
@@ -61,7 +61,7 @@ classdef node_data < handle
                     curves_to_merge{j} = children(j).curves{idx(j)};
                 end
                 
-                merged = merge_curves(d, curves_to_merge, s, Vbounds);
+                merged = merge_curves(d, curves_to_merge, constraint);
                 if isa(merged, 'struct')
                     obj.add_curve(idx, merged);
                 end
