@@ -9,7 +9,7 @@ This repository contains MATLAB code for the optimal power flow problem on a spe
 
 The precise definition and the algorithm used by our solver are described in our paper: 
 
-> A. Beck, Y. Beck, Y. Levron, A. Shtof, L. Tetruashvili "Globally Solving a Class of Optimal Power Flow Problems in Radial Networks by Tree Reduction", April 18, 2018. Available at [Springer Link](https://link.springer.com/article/10.1007/s10898-018-0652-z).
+> A. Beck, Y. Beck, Y. Levron, A. Shtof, L. Tetruashvili "Globally Solving a Class of Optimal Power Flow Problems in Radial Networks by Tree Reduction", Journal of Global Optimization, April 18, 2018. Available at [Springer Link](https://link.springer.com/article/10.1007/s10898-018-0652-z).
 
 # Getting Started
 
